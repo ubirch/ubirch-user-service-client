@@ -8,9 +8,10 @@ object UserClientRoutes {
 
   val urlDeepCheck = s"$host${UserClientRouteKeys.pathDeepCheck}"
 
-  def pathGroupMemberOf(contextName: String,
-                        providerId: String,
-                        externalUserId: String
+  def pathGroupMemberOf(
+                         contextName: String,
+                         providerId: String,
+                         externalUserId: String
                        ): String = {
 
     val path = UserClientRouteKeys.pathGroupMemberOf(
@@ -23,8 +24,9 @@ object UserClientRoutes {
 
   }
 
-  def pathUserGET(providerId: String,
-                  externalUserId: String
+  def pathUserGET(
+                   providerId: String,
+                   externalUserId: String
                  ): String = {
 
     val path = UserClientRouteKeys.pathUserFind(
@@ -40,8 +42,9 @@ object UserClientRoutes {
 
   val pathUserRecreate: String = s"$host${UserClientRouteKeys.pathRecreate}"
 
-  def pathUserPUT(providerId: String,
-                  externalUserId: String
+  def pathUserPUT(
+                   providerId: String,
+                   externalUserId: String
                  ): String = {
 
     val path = UserClientRouteKeys.pathUserUpdate(
@@ -53,8 +56,9 @@ object UserClientRoutes {
 
   }
 
-  def pathUserDELETE(providerId: String,
-                     externalUserId: String
+  def pathUserDELETE(
+                      providerId: String,
+                      externalUserId: String
                     ): String = {
 
     val path = UserClientRouteKeys.pathUserDelete(
@@ -75,9 +79,10 @@ object UserClientRoutes {
 
   val pathRegisterPOST = s"$host${UserClientRouteKeys.pathRegister}"
 
-  def pathUserInfoGET(context: String,
-                      providerId: String,
-                      externalUserId: String
+  def pathUserInfoGET(
+                       context: String,
+                       providerId: String,
+                       externalUserId: String
                      ): String = {
 
     val path = UserClientRouteKeys.pathUserInfoGET(context, providerId, externalUserId)

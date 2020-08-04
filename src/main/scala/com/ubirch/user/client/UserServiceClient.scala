@@ -4,7 +4,7 @@ import akka.http.scaladsl.HttpExt
 import akka.http.scaladsl.model._
 import akka.stream.Materializer
 import akka.util.ByteString
-import com.typesafe.scalalogging.slf4j.StrictLogging
+import com.typesafe.scalalogging.StrictLogging
 import com.ubirch.user.client.conf.UserClientRoutes
 import com.ubirch.user.client.model._
 import com.ubirch.util.deepCheck.model.DeepCheckResponse
@@ -16,11 +16,9 @@ import org.json4s.native.Serialization.read
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-
 object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
   def check()(implicit httpClient: HttpExt, materializer: Materializer): Future[Option[JsonResponse]] = {
-
 
     val url = UserClientRoutes.urlCheck
     httpClient.singleRequest(HttpRequest(uri = url)) flatMap {
@@ -70,9 +68,10 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
   }
 
-  def groupMemberOf(contextName: String,
-                    providerId: String,
-                    externalUserId: String
+  def groupMemberOf(
+                     contextName: String,
+                     providerId: String,
+                     externalUserId: String
                    )
                    (implicit httpClient: HttpExt, materializer: Materializer): Future[Option[Set[Group]]] = {
 
@@ -102,8 +101,9 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
   }
 
-  def userGET(providerId: String,
-              externalUserId: String
+  def userGET(
+               providerId: String,
+               externalUserId: String
              )(implicit httpClient: HttpExt, materializer: Materializer): Future[Option[User]] = {
 
     logger.debug("userGET(): query user through REST API")
@@ -166,7 +166,6 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
     }
   }
-
 
   private def postUserHelperMethod(url: Uri, userJsonString: String)
                                   (implicit httpClient: HttpExt, materializer: Materializer): Future[Option[User]] = {
@@ -234,8 +233,9 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
   }
 
-  def userDELETE(providerId: String,
-                 externalUserId: String
+  def userDELETE(
+                  providerId: String,
+                  externalUserId: String
                 )(implicit httpClient: HttpExt, materializer: Materializer): Future[Boolean] = {
 
     logger.debug("userDELETE(): delete user through REST API")
@@ -322,9 +322,10 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
   }
 
-  def userInfoGET(context: String,
-                  providerId: String,
-                  externalUserId: String
+  def userInfoGET(
+                   context: String,
+                   providerId: String,
+                   externalUserId: String
                  )
                  (implicit httpClient: HttpExt, materializer: Materializer): Future[Option[UserInfo]] = {
 
@@ -348,7 +349,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
   }
 
-  @deprecated
+  @deprecated("this endpoint seems broken", "since ubirch-user-service-client 1.0.4")
   def userInfoPUT(updateInfo: UpdateInfo)
                  (implicit httpClient: HttpExt, materializer: Materializer): Future[Option[UserInfo]] = {
 
@@ -388,8 +389,9 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
   }
 
-  private def logErrorAndReturnNone[T](errorMsg: String,
-                                       t: Option[Throwable] = None
+  private def logErrorAndReturnNone[T](
+                                        errorMsg: String,
+                                        t: Option[Throwable] = None
                                       ): Option[T] = {
     t match {
       case None => logger.error(errorMsg)

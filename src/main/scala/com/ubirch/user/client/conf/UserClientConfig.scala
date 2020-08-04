@@ -2,7 +2,6 @@ package com.ubirch.user.client.conf
 
 import com.ubirch.util.config.ConfigBase
 
-
 object UserClientConfig extends ConfigBase {
 
   /**
@@ -10,8 +9,6 @@ object UserClientConfig extends ConfigBase {
     *
     * @return host
     */
-  def host = config.getString(UserClientConfigKeys.HOST)
-
-
+  def host: String = config.getString(UserClientConfigKeys.HOST)
 
 }
