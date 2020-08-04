@@ -18,8 +18,7 @@ lazy val userServiceClient = (project in file("."))
       url("https://github.com/ubirch/ubirch-user-service-client"),
       "scm:git:git@github.com:ubirch/ubirch-user-service-client.git"
     )),
-    version := "SNAPSHOT-0.1.0",
-//    test in assembly := {},
+    version := "1.0.4",
     resolvers ++= Seq(
       Resolver.sonatypeRepo("releases"),
       Resolver.sonatypeRepo("snapshots")
