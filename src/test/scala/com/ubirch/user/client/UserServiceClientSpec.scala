@@ -34,8 +34,6 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
 
   feature("user client requests") {
 
-    // contextName, providerId and externalUserId have been created by InitData
-    //    val contextName = "ubirch-local"
     val contextName = "trackle-dev"
 
     val providerId = "google"
@@ -83,24 +81,35 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
       }
     }
 
-    scenario("userInfoPUT") {
+//    scenario("userInfoPUT") {
+//
+//      val updateInfo = UpdateInfo(
+//        SimpleUserContext(
+//          context = contextName,
+//          providerId = providerId,
+//          userId = externalUserId
+//        ),
+//        UserUpdate(newUserName)
+//      )
+//
+//      UserServiceClient.userInfoPUT(updateInfo)
+//        .map { userInfoOpt =>
+//          userInfoOpt.nonEmpty shouldBe true
+//          val userInfo = userInfoOpt.get
+//          userInfo.displayName shouldBe newUserName
+//        }
+//
+//    }
 
-      val updateInfo = UpdateInfo(
-        SimpleUserContext(
-          context = contextName,
-          providerId = providerId,
-          userId = externalUserId
-        ),
-        UserUpdate(newUserName)
-      )
-
-      UserServiceClient.userInfoPUT(updateInfo)
-        .map { userInfoOpt =>
-          userInfoOpt.nonEmpty shouldBe true
-          val userInfo = userInfoOpt.get
-          userInfo.displayName shouldBe newUserName
-        }
-
+    scenario("groupMemberOff returns group") {
+      UserServiceClient.groupMemberOf(
+        contextName = contextName,
+        providerId = providerId,
+        externalUserId = externalUserId
+      ).map { groupSetOpt =>
+        groupSetOpt.nonEmpty shouldBe true
+        groupSetOpt.get.nonEmpty shouldBe true
+      }
     }
 
 
@@ -109,7 +118,6 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
       UserServiceClient.extIdExistsGET(externalUserId)
         .map { boolean => boolean shouldBe true }
     }
-
 
     scenario("userInfoDELETE") {
 
@@ -122,14 +130,14 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
     }
 
 
-    scenario("groupMemberOff") {
-
+    scenario("groupMemberOff returns empty set") {
       UserServiceClient.groupMemberOf(
         contextName = contextName,
         providerId = providerId,
         externalUserId = externalUserId
-      ).map { groupSet =>
-        groupSet.nonEmpty shouldBe true
+      ).map { groupSetOpt =>
+        groupSetOpt.nonEmpty shouldBe true
+        groupSetOpt.get.nonEmpty shouldBe false
       }
     }
 

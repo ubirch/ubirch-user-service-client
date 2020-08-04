@@ -348,6 +348,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
   }
 
+  @deprecated
   def userInfoPUT(updateInfo: UpdateInfo)
                  (implicit httpClient: HttpExt, materializer: Materializer): Future[Option[UserInfo]] = {
 
