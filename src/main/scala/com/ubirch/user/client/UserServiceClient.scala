@@ -4,8 +4,8 @@ import akka.http.scaladsl.HttpExt
 import akka.http.scaladsl.model._
 import akka.stream.Materializer
 import akka.util.ByteString
-import com.typesafe.scalalogging.StrictLogging
-import com.ubirch.user.client.conf.UserClientRoutes
+import com.typesafe.scalalogging.slf4j.StrictLogging
+import com.ubirch.user.client.conf.UserServiceClientRoutes
 import com.ubirch.user.client.model._
 import com.ubirch.util.deepCheck.model.DeepCheckResponse
 import com.ubirch.util.deepCheck.util.DeepCheckResponseUtil
@@ -20,7 +20,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
   def check()(implicit httpClient: HttpExt, materializer: Materializer): Future[Option[JsonResponse]] = {
 
-    val url = UserClientRoutes.urlCheck
+    val url = UserServiceClientRoutes.urlCheck
     httpClient.singleRequest(HttpRequest(uri = url)) flatMap {
 
       case HttpResponse(StatusCodes.OK, _, entity, _) =>
@@ -44,7 +44,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
     val statusCodes: Set[StatusCode] = Set(StatusCodes.OK, StatusCodes.ServiceUnavailable)
 
-    val url = UserClientRoutes.urlDeepCheck
+    val url = UserServiceClientRoutes.urlDeepCheck
 
     httpClient.singleRequest(HttpRequest(uri = url)) flatMap {
 
@@ -76,7 +76,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
                    (implicit httpClient: HttpExt, materializer: Materializer): Future[Option[Set[Group]]] = {
 
     logger.debug("groups(): query groups through REST API")
-    val url = UserClientRoutes.pathGroupMemberOf(
+    val url = UserServiceClientRoutes.pathGroupMemberOf(
       contextName = contextName,
       providerId = providerId,
       externalUserId = externalUserId
@@ -107,7 +107,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
              )(implicit httpClient: HttpExt, materializer: Materializer): Future[Option[User]] = {
 
     logger.debug("userGET(): query user through REST API")
-    val url = UserClientRoutes.pathUserGET(
+    val url = UserServiceClientRoutes.pathUserGET(
       providerId = providerId,
       externalUserId = externalUserId
     )
@@ -139,7 +139,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
       case Some(userJsonString: String) =>
 
         logger.debug(s"user (object): $userJsonString")
-        val url = UserClientRoutes.pathUserPOST
+        val url = UserServiceClientRoutes.pathUserPOST
         postUserHelperMethod(url, userJsonString)
 
       case None =>
@@ -157,7 +157,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
       case Some(userJsonString: String) =>
 
         logger.debug(s"recreate: $userJsonString")
-        val url = UserClientRoutes.pathUserRecreate
+        val url = UserServiceClientRoutes.pathUserRecreate
         postUserHelperMethod(url, userJsonString)
 
       case None =>
@@ -199,7 +199,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
       case Some(userJsonString: String) =>
 
         logger.debug(s"user (object): $userJsonString")
-        val url = UserClientRoutes.pathUserPUT(
+        val url = UserServiceClientRoutes.pathUserPUT(
           providerId = user.providerId,
           externalUserId = user.externalId
         )
@@ -239,7 +239,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
                 )(implicit httpClient: HttpExt, materializer: Materializer): Future[Boolean] = {
 
     logger.debug("userDELETE(): delete user through REST API")
-    val url = UserClientRoutes.pathUserDELETE(
+    val url = UserServiceClientRoutes.pathUserDELETE(
       providerId = providerId,
       externalUserId = externalUserId
     )
@@ -265,7 +265,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
                     (implicit httpClient: HttpExt, materializer: Materializer): Future[Boolean] = {
 
     logger.debug("extIdExistsGET(): search external ID through REST API")
-    val url = UserClientRoutes.pathExternalIdExistsGET(externalId)
+    val url = UserServiceClientRoutes.pathExternalIdExistsGET(externalId)
 
     httpClient.singleRequest(HttpRequest(uri = url)) map {
 
@@ -291,7 +291,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
       case Some(userContextJsonString: String) =>
 
         logger.debug(s"userContext (object): $userContextJsonString")
-        val url = UserClientRoutes.pathRegisterPOST
+        val url = UserServiceClientRoutes.pathRegisterPOST
         val req = HttpRequest(
           method = HttpMethods.POST,
           uri = url,
@@ -330,7 +330,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
                  (implicit httpClient: HttpExt, materializer: Materializer): Future[Option[UserInfo]] = {
 
     logger.debug(s"userInfoGET(): search userInfo ($context/$providerId/$externalUserId) through REST API")
-    val url = UserClientRoutes.pathUserInfoGET(context = context, providerId = providerId, externalUserId = externalUserId)
+    val url = UserServiceClientRoutes.pathUserInfoGET(context = context, providerId = providerId, externalUserId = externalUserId)
 
     httpClient.singleRequest(HttpRequest(uri = url)) flatMap {
 
@@ -358,7 +358,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
       case Some(updateInfoJsonString: String) =>
 
         logger.debug(s"updateInfo (object): $updateInfoJsonString")
-        val url = UserClientRoutes.pathUserInfoPUT
+        val url = UserServiceClientRoutes.pathUserInfoPUT
         val req = HttpRequest(
           method = HttpMethods.PUT,
           uri = url,

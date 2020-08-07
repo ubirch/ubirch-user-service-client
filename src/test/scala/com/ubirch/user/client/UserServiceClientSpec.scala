@@ -3,7 +3,7 @@ package com.ubirch.user.client
 import akka.actor.ActorSystem
 import akka.http.scaladsl.{Http, HttpExt}
 import akka.stream.ActorMaterializer
-import com.typesafe.scalalogging.StrictLogging
+import com.typesafe.scalalogging.slf4j.StrictLogging
 import com.ubirch.user.client.UserServiceClient.userInfoGET
 import com.ubirch.user.client.model._
 import org.scalatest.{AsyncFeatureSpec, Matchers}
