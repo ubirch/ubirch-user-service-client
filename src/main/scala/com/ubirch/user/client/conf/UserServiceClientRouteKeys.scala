@@ -2,7 +2,7 @@ package com.ubirch.user.client.conf
 
 import java.net.URLEncoder
 
-object UserClientRouteKeys {
+object UserServiceClientRouteKeys {
 
   final val apiPrefix = "api"
   final val serviceName = "userService"
