@@ -2,6 +2,7 @@ package com.ubirch.user.client.conf
 
 import com.ubirch.util.config.ConfigBase
 
+
 object UserServiceClientConfig extends ConfigBase {
 
   /**
