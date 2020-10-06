@@ -123,9 +123,8 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
       case res@HttpResponse(code, _, _, _) =>
 
         res.discardEntityBytes()
-        Future(
-          logErrorAndReturnNone(s"userGET() call to user-service REST API failed: url=$url, code=$code")
-        )
+        logger.warn(s"userGET() call to user-service REST API failed: url=$url, code=$code")
+        Future(None)
 
     }
 
@@ -276,7 +275,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
       case res@HttpResponse(code, _, _, _) =>
 
-        logErrorAndReturnNone(s"emailExistsGET() call to user-service REST API failed: url=$url, code=$code")
+        logger.warn(s"emailExistsGET() call to user-service REST API failed: url=$url, code=$code")
         false
 
     }
