@@ -3,7 +3,7 @@ package com.ubirch.user.client
 import akka.actor.ActorSystem
 import akka.http.scaladsl.{Http, HttpExt}
 import akka.stream.ActorMaterializer
-import com.typesafe.scalalogging.slf4j.StrictLogging
+import com.typesafe.scalalogging.StrictLogging
 import com.ubirch.user.client.UserServiceClient.userInfoGET
 import com.ubirch.user.client.model._
 import org.scalatest.{AsyncFeatureSpec, Matchers}
@@ -81,25 +81,25 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
       }
     }
 
-//    scenario("userInfoPUT") {
-//
-//      val updateInfo = UpdateInfo(
-//        SimpleUserContext(
-//          context = contextName,
-//          providerId = providerId,
-//          userId = externalUserId
-//        ),
-//        UserUpdate(newUserName)
-//      )
-//
-//      UserServiceClient.userInfoPUT(updateInfo)
-//        .map { userInfoOpt =>
-//          userInfoOpt.nonEmpty shouldBe true
-//          val userInfo = userInfoOpt.get
-//          userInfo.displayName shouldBe newUserName
-//        }
-//
-//    }
+    //    scenario("userInfoPUT") {
+    //
+    //      val updateInfo = UpdateInfo(
+    //        SimpleUserContext(
+    //          context = contextName,
+    //          providerId = providerId,
+    //          userId = externalUserId
+    //        ),
+    //        UserUpdate(newUserName)
+    //      )
+    //
+    //      UserServiceClient.userInfoPUT(updateInfo)
+    //        .map { userInfoOpt =>
+    //          userInfoOpt.nonEmpty shouldBe true
+    //          val userInfo = userInfoOpt.get
+    //          userInfo.displayName shouldBe newUserName
+    //        }
+    //
+    //    }
 
     scenario("groupMemberOff returns group") {
       UserServiceClient.groupMemberOf(
@@ -111,7 +111,6 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
         groupSetOpt.get.nonEmpty shouldBe true
       }
     }
-
 
     scenario("externalId exists") {
 
@@ -129,7 +128,6 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
       }
     }
 
-
     scenario("groupMemberOff returns empty set") {
       UserServiceClient.groupMemberOf(
         contextName = contextName,
@@ -142,6 +140,5 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
     }
 
   }
-
 
 }

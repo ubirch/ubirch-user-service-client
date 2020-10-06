@@ -22,9 +22,9 @@ object UserServiceClientRouteKeys {
   val pathDeepCheck = s"$pathPrefix/$deepCheck"
   val pathUser = s"$pathPrefix/$user"
   val pathRecreate = s"$pathPrefix/$user/$recreate"
+  final val pathUserInfo = s"$pathUser/$info"
   final val pathUserInfoPUT = pathUserInfo
   final val pathRegister = s"$pathPrefix/$register"
-  private val pathUserInfo = s"$pathUser/$info"
 
   def pathUserFind(providerId: String, externalUserId: String): String = {
 
@@ -60,9 +60,10 @@ object UserServiceClientRouteKeys {
 
   }
 
-  def pathGroupMemberOf(contextName: String,
-                        providerId: String,
-                        externalUserId: String
+  def pathGroupMemberOf(
+                         contextName: String,
+                         providerId: String,
+                         externalUserId: String
                        ): String = {
 
     val contextEncoded = URLEncoder.encode(contextName, "UTF-8")
@@ -81,6 +82,5 @@ object UserServiceClientRouteKeys {
 
     s"$pathUserInfo/$contextEncoded/$providerEncoded/$userEncoded"
   }
-
 
 }

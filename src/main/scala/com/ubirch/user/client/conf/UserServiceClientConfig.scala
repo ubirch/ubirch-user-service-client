@@ -10,8 +10,6 @@ object UserServiceClientConfig extends ConfigBase {
     *
     * @return host
     */
-  def host = config.getString(UserServiceClientConfigKeys.HOST)
-
-
+  def host: String = config.getString(UserServiceClientConfigKeys.HOST)
 
 }
