@@ -8,9 +8,10 @@ object UserServiceClientRoutes {
 
   val urlDeepCheck = s"$host${UserServiceClientRouteKeys.pathDeepCheck}"
 
-  def pathGroupMemberOf(contextName: String,
-                        providerId: String,
-                        externalUserId: String
+  def pathGroupMemberOf(
+                         contextName: String,
+                         providerId: String,
+                         externalUserId: String
                        ): String = {
 
     val path = UserServiceClientRouteKeys.pathGroupMemberOf(
@@ -23,8 +24,9 @@ object UserServiceClientRoutes {
 
   }
 
-  def pathUserGET(providerId: String,
-                  externalUserId: String
+  def pathUserGET(
+                   providerId: String,
+                   externalUserId: String
                  ): String = {
 
     val path = UserServiceClientRouteKeys.pathUserFind(
@@ -40,8 +42,9 @@ object UserServiceClientRoutes {
 
   val pathUserRecreate: String = s"$host${UserServiceClientRouteKeys.pathRecreate}"
 
-  def pathUserPUT(providerId: String,
-                  externalUserId: String
+  def pathUserPUT(
+                   providerId: String,
+                   externalUserId: String
                  ): String = {
 
     val path = UserServiceClientRouteKeys.pathUserUpdate(
@@ -53,8 +56,9 @@ object UserServiceClientRoutes {
 
   }
 
-  def pathUserDELETE(providerId: String,
-                     externalUserId: String
+  def pathUserDELETE(
+                      providerId: String,
+                      externalUserId: String
                     ): String = {
 
     val path = UserServiceClientRouteKeys.pathUserDelete(
@@ -75,9 +79,10 @@ object UserServiceClientRoutes {
 
   val pathRegisterPOST = s"$host${UserServiceClientRouteKeys.pathRegister}"
 
-  def pathUserInfoGET(context: String,
-                      providerId: String,
-                      externalUserId: String
+  def pathUserInfoGET(
+                       context: String,
+                       providerId: String,
+                       externalUserId: String
                      ): String = {
 
     val path = UserServiceClientRouteKeys.pathUserInfoGET(context, providerId, externalUserId)
