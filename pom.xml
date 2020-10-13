@@ -106,8 +106,8 @@
             <url>https://oss.sonatype.org/content/repositories/releases</url>
         </repository>
         <repository>
-            <id>io.cloudrepo</id>
-            <url>https://ubirch.mycloudrepo.io/repositories/mvn-public</url>
+            <id>io.cloudrepo.public</id>
+            <url>https://ubirch.mycloudrepo.io/public/repositories/mvn-public</url>
         </repository>
     </repositories>
 
