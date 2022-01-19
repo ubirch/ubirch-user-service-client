@@ -2,21 +2,20 @@ package com.ubirch.user.client
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.{Http, HttpExt}
-import akka.stream.ActorMaterializer
 import com.typesafe.scalalogging.StrictLogging
 import com.ubirch.user.client.UserServiceClient.userInfoGET
 import com.ubirch.user.client.model._
-import org.scalatest.{AsyncFeatureSpec, Matchers}
+import org.scalatest.featurespec.AsyncFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLogging {
 
   implicit val system: ActorSystem = ActorSystem("userServiceClientTSpec")
-  implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val httpClient: HttpExt = Http()
 
-  feature("user service checks") {
+  Feature("user service checks") {
 
-    scenario("check") {
+    Scenario("check") {
 
       UserServiceClient.check() map { jsonResponseOpt =>
         jsonResponseOpt.nonEmpty shouldBe true
@@ -24,7 +23,7 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
       }
     }
 
-    scenario("deepCheck") {
+    Scenario("deepCheck") {
 
       UserServiceClient.deepCheck() map { deepCheckResponse =>
         deepCheckResponse.status shouldBe true
@@ -32,7 +31,7 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
     }
   }
 
-  feature("user client requests") {
+  Feature("user client requests") {
 
     val contextName = "trackle-dev"
 
@@ -43,7 +42,7 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
     val locale = "en-US"
     val email = Some("someUser@ubirch.com")
 
-    scenario("post user") {
+    Scenario("post user") {
 
       val userContext = UserContext(
         context = contextName,
@@ -60,7 +59,7 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
         }
     }
 
-    scenario("userInfoGET") {
+    Scenario("userInfoGET") {
       userInfoGET(contextName, providerId, externalUserId)
         .map { result =>
           result.nonEmpty shouldBe true
@@ -71,7 +70,7 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
 
     }
 
-    scenario("user Get") {
+    Scenario("user Get") {
 
       UserServiceClient.userGET(
         providerId = providerId,
@@ -81,7 +80,7 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
       }
     }
 
-    //    scenario("userInfoPUT") {
+    //    Scenario("userInfoPUT") {
     //
     //      val updateInfo = UpdateInfo(
     //        SimpleUserContext(
@@ -101,7 +100,7 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
     //
     //    }
 
-    scenario("groupMemberOff returns group") {
+    Scenario("groupMemberOff returns group") {
       UserServiceClient.groupMemberOf(
         contextName = contextName,
         providerId = providerId,
@@ -112,13 +111,13 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
       }
     }
 
-    scenario("externalId exists") {
+    Scenario("externalId exists") {
 
       UserServiceClient.extIdExistsGET(externalUserId)
         .map { boolean => boolean shouldBe true }
     }
 
-    scenario("userInfoDELETE") {
+    Scenario("userInfoDELETE") {
 
       UserServiceClient.userDELETE(
         providerId = providerId,
@@ -128,7 +127,7 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
       }
     }
 
-    scenario("groupMemberOff returns empty set") {
+    Scenario("groupMemberOff returns empty set") {
       UserServiceClient.groupMemberOf(
         contextName = contextName,
         providerId = providerId,
