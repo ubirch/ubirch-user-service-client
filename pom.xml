@@ -81,7 +81,6 @@
         <scala.logging.version>3.9.4</scala.logging.version>
         <logstash-logback.version>7.0.1</logstash-logback.version>
 
-
         <!-- plugins -->
         <maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
         <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
@@ -203,7 +202,7 @@
         <!-- test dependencies -->
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_${scala.major.version}</artifactId>
+            <artifactId>scalatest_${scala.compat.version}</artifactId>
             <version>${scalatest.version}</version>
             <scope>test</scope>
         </dependency>
