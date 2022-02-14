@@ -17,11 +17,13 @@ object UserServiceClientRouteKeys {
   final val recreate = "recreate"
   final val info = "info"
   final val register = "register"
+  final val activation = "activation"
   val pathPrefix = s"/$apiPrefix/$serviceName/$currentVersion"
   val pathCheck = s"$pathPrefix/$check"
   val pathDeepCheck = s"$pathPrefix/$deepCheck"
   val pathUser = s"$pathPrefix/$user"
   val pathRecreate = s"$pathPrefix/$user/$recreate"
+  final val pathActivation = s"$pathPrefix/$user/$activation"
   final val pathUserInfo = s"$pathUser/$info"
   final val pathUserInfoPUT = pathUserInfo
   final val pathRegister = s"$pathPrefix/$register"

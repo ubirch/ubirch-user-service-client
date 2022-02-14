@@ -1,9 +1,10 @@
 package com.ubirch.user.client
 
 import akka.actor.ActorSystem
+import akka.http.scaladsl.model.StatusCodes.{BadRequest, OK}
 import akka.http.scaladsl.{Http, HttpExt}
 import com.typesafe.scalalogging.StrictLogging
-import com.ubirch.user.client.UserServiceClient.userInfoGET
+import com.ubirch.user.client.UserServiceClient.{registerPOST, userInfoGET}
 import com.ubirch.user.client.model._
 import org.scalatest.featurespec.AsyncFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -75,7 +76,8 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
       UserServiceClient.userGET(
         providerId = providerId,
         externalUserId = externalUserId
-      ).map { futureUserOpt =>
+      ).map { futureUserOpt: Option[User] =>
+        println(futureUserOpt)
         futureUserOpt.nonEmpty shouldBe true
       }
     }
@@ -117,6 +119,30 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
         .map { boolean => boolean shouldBe true }
     }
 
+    Scenario("update active state") {
+
+      UserServiceClient.activationPOST(
+      ActivationUpdate(Seq(UserActivationUpdate(externalId = externalUserId, activate = true)))
+      ).map {
+        case Right(result: ActivationResponse) => result.status shouldBe OK
+        case Left(_) => fail("user activation should be successfully processed")
+      }
+    }
+
+    Scenario("fail to update active state") {
+
+      UserServiceClient.activationPOST(
+        ActivationUpdate(Seq(UserActivationUpdate(externalId = externalUserId, activate = true)))
+      ).map {
+        case Right(result: ActivationResponse) =>
+          result.response.contains(s"$externalUserId;true;;update not possible due to target status of activeUser " +
+            s"flag already being 'true'.") shouldBe true
+          result.status shouldBe BadRequest
+        case Left(_) => fail("user activation should be successfully processed")
+      }
+    }
+
+
     Scenario("userInfoDELETE") {
 
       UserServiceClient.userDELETE(
@@ -137,7 +163,6 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
         groupSetOpt.get.nonEmpty shouldBe false
       }
     }
-
   }
 
 }

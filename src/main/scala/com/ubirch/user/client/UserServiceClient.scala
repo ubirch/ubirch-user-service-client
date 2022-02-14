@@ -229,7 +229,6 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
         Future(None)
 
     }
-
   }
 
   def userDELETE(
@@ -320,6 +319,35 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
     }
 
   }
+
+  def activationPOST(activation: ActivationUpdate)
+                  (implicit httpClient: HttpExt, materializer: Materializer): Future[Either[Unit, ActivationResponse]] = {
+
+    Json4sUtil.any2String(activation) match {
+
+      case Some(activationJson: String) =>
+
+        val url = UserServiceClientRoutes.pathActivationPOST
+        val req = HttpRequest(
+          method = HttpMethods.POST,
+          uri = url,
+          entity = HttpEntity.Strict(ContentTypes.`application/json`, data = ByteString(activationJson))
+        )
+        httpClient.singleRequest(req) flatMap {
+
+          case HttpResponse(status, _, entity, _) =>
+
+            entity.dataBytes.runFold(ByteString(""))(_ ++ _) map { csvBody =>
+              Right(ActivationResponse(status, csvBody.utf8String))
+            }
+        }
+
+      case None =>
+        logger.error(s"failed to to convert input to JSON: activationJson=$activation")
+        Future(Left(()))
+    }
+  }
+
 
   def userInfoGET(
                    context: String,
