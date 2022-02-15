@@ -4,8 +4,9 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes.{BadRequest, OK}
 import akka.http.scaladsl.{Http, HttpExt}
 import com.typesafe.scalalogging.StrictLogging
-import com.ubirch.user.client.UserServiceClient.{registerPOST, userInfoGET}
+import com.ubirch.user.client.UserServiceClient.userInfoGET
 import com.ubirch.user.client.model._
+import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.featurespec.AsyncFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -76,9 +77,17 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
       UserServiceClient.userGET(
         providerId = providerId,
         externalUserId = externalUserId
-      ).map { futureUserOpt: Option[User] =>
-        println(futureUserOpt)
-        futureUserOpt.nonEmpty shouldBe true
+      ).map { futureUserOpt =>
+        futureUserOpt.isDefined shouldBe true
+        val user = futureUserOpt.get
+        user.id.isDefined shouldBe true
+        user.providerId shouldBe providerId
+        user.externalId shouldBe externalUserId
+        user.email shouldBe email.map(_.toLowerCase())
+        user.activeUser shouldBe false
+        user.locale shouldBe locale
+        user.action shouldBe None
+        user.executionDate shouldBe None
       }
     }
 
@@ -138,6 +147,35 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
           result.response.contains(s"$externalUserId;true;;update not possible due to target status of activeUser " +
             s"flag already being 'true'.") shouldBe true
           result.status shouldBe BadRequest
+        case Left(_) => fail("user activation should be successfully processed")
+      }
+    }
+
+    Scenario("update active state in future") {
+
+      val executionDate = DateTime.now(DateTimeZone.UTC).plusDays(1)
+      UserServiceClient.activationPOST(
+        ActivationUpdate(Seq(UserActivationUpdate(externalId = externalUserId, activate = false, Some(executionDate) )))
+      ).flatMap {
+
+        case Right(result: ActivationResponse) =>
+
+          result.status shouldBe OK
+
+          UserServiceClient.userGET(
+            providerId = providerId,
+            externalUserId = externalUserId
+          ).map { futureUserOpt =>
+            futureUserOpt.nonEmpty shouldBe true
+            val user: User = futureUserOpt.get
+            user.activeUser shouldBe true
+            user.providerId shouldBe providerId
+            user.locale shouldBe locale
+            println()
+            user.executionDate shouldBe Some(executionDate)
+            user.action shouldBe Some(Deactivate)
+          }
+
         case Left(_) => fail("user activation should be successfully processed")
       }
     }
