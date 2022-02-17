@@ -21,7 +21,7 @@
 
     <groupId>com.ubirch.user</groupId>
     <artifactId>ubirch-user-service-client_${scala.major.version}</artifactId>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
     <packaging>jar</packaging>
 
     <licenses>

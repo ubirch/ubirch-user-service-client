@@ -6,11 +6,13 @@ import akka.stream.Materializer
 import akka.util.ByteString
 import com.typesafe.scalalogging.StrictLogging
 import com.ubirch.user.client.conf.UserServiceClientRoutes
+import com.ubirch.user.client.formats.UserFormats
 import com.ubirch.user.client.model._
 import com.ubirch.util.deepCheck.model.DeepCheckResponse
 import com.ubirch.util.deepCheck.util.DeepCheckResponseUtil
-import com.ubirch.util.json.{Json4sUtil, MyJsonProtocol}
+import com.ubirch.util.json.{Json4sUtil, JsonFormats, MyJsonProtocol}
 import com.ubirch.util.model.JsonResponse
+import org.json4s.Formats
 import org.json4s.native.Serialization.read
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -18,6 +20,7 @@ import scala.concurrent.Future
 
 object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
+  override implicit def json4sJacksonFormats: Formats = JsonFormats.default ++ UserFormats.all
   def check()(implicit httpClient: HttpExt, materializer: Materializer): Future[Option[JsonResponse]] = {
 
     val url = UserServiceClientRoutes.urlCheck
@@ -229,7 +232,6 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
         Future(None)
 
     }
-
   }
 
   def userDELETE(
@@ -320,6 +322,32 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
     }
 
   }
+
+  def activationPOST(activation: ActivationUpdate)
+                  (implicit httpClient: HttpExt, materializer: Materializer): Future[Either[String, ActivationResponse]] = {
+
+    Json4sUtil.any2String(activation) match {
+
+      case Some(activationJson: String) =>
+
+        val url = UserServiceClientRoutes.pathActivationPOST
+        val req = HttpRequest(
+          method = HttpMethods.POST,
+          uri = url,
+          entity = HttpEntity.Strict(ContentTypes.`application/json`, data = ByteString(activationJson))
+        )
+        httpClient.singleRequest(req) flatMap { rsp =>
+
+          rsp.entity.dataBytes.runFold(ByteString(""))(_ ++ _) map { csvBody =>
+              Right(ActivationResponse(rsp.status, csvBody.utf8String))
+            }
+        }
+
+      case None =>
+        Future(Left(s"failed to to convert input to JSON: activationJson=$activation"))
+    }
+  }
+
 
   def userInfoGET(
                    context: String,

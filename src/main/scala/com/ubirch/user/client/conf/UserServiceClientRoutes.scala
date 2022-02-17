@@ -79,6 +79,8 @@ object UserServiceClientRoutes {
 
   val pathRegisterPOST = s"$host${UserServiceClientRouteKeys.pathRegister}"
 
+  val pathActivationPOST = s"$host${UserServiceClientRouteKeys.pathActivation}"
+
   def pathUserInfoGET(
                        context: String,
                        providerId: String,

@@ -1,10 +1,12 @@
 package com.ubirch.user.client
 
 import akka.actor.ActorSystem
+import akka.http.scaladsl.model.StatusCodes.{BadRequest, OK}
 import akka.http.scaladsl.{Http, HttpExt}
 import com.typesafe.scalalogging.StrictLogging
 import com.ubirch.user.client.UserServiceClient.userInfoGET
 import com.ubirch.user.client.model._
+import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.featurespec.AsyncFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -76,7 +78,16 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
         providerId = providerId,
         externalUserId = externalUserId
       ).map { futureUserOpt =>
-        futureUserOpt.nonEmpty shouldBe true
+        futureUserOpt.isDefined shouldBe true
+        val user = futureUserOpt.get
+        user.id.isDefined shouldBe true
+        user.providerId shouldBe providerId
+        user.externalId shouldBe externalUserId
+        user.email shouldBe email.map(_.toLowerCase())
+        user.activeUser shouldBe false
+        user.locale shouldBe locale
+        user.action shouldBe None
+        user.executionDate shouldBe None
       }
     }
 
@@ -117,6 +128,59 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
         .map { boolean => boolean shouldBe true }
     }
 
+    Scenario("update active state") {
+
+      UserServiceClient.activationPOST(
+      ActivationUpdate(Seq(UserActivationUpdate(externalId = externalUserId, activate = true)))
+      ).map {
+        case Right(result: ActivationResponse) => result.status shouldBe OK
+        case Left(_) => fail("user activation should be successfully processed")
+      }
+    }
+
+    Scenario("fail to update active state") {
+
+      UserServiceClient.activationPOST(
+        ActivationUpdate(Seq(UserActivationUpdate(externalId = externalUserId, activate = true)))
+      ).map {
+        case Right(result: ActivationResponse) =>
+          result.response.contains(s"$externalUserId;true;;update not possible due to target status of activeUser " +
+            s"flag already being 'true'.") shouldBe true
+          result.status shouldBe BadRequest
+        case Left(_) => fail("user activation should be successfully processed")
+      }
+    }
+
+    Scenario("update active state in future") {
+
+      val executionDate = DateTime.now(DateTimeZone.UTC).plusDays(1)
+      UserServiceClient.activationPOST(
+        ActivationUpdate(Seq(UserActivationUpdate(externalId = externalUserId, activate = false, Some(executionDate) )))
+      ).flatMap {
+
+        case Right(result: ActivationResponse) =>
+
+          result.status shouldBe OK
+
+          UserServiceClient.userGET(
+            providerId = providerId,
+            externalUserId = externalUserId
+          ).map { futureUserOpt =>
+            futureUserOpt.nonEmpty shouldBe true
+            val user: User = futureUserOpt.get
+            user.activeUser shouldBe true
+            user.providerId shouldBe providerId
+            user.locale shouldBe locale
+            println()
+            user.executionDate shouldBe Some(executionDate)
+            user.action shouldBe Some(Deactivate)
+          }
+
+        case Left(_) => fail("user activation should be successfully processed")
+      }
+    }
+
+
     Scenario("userInfoDELETE") {
 
       UserServiceClient.userDELETE(
@@ -137,7 +201,6 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
         groupSetOpt.get.nonEmpty shouldBe false
       }
     }
-
   }
 
 }
