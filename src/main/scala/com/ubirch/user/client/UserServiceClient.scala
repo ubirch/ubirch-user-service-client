@@ -324,7 +324,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
   }
 
   def activationPOST(activation: ActivationUpdate)
-                  (implicit httpClient: HttpExt, materializer: Materializer): Future[Either[Unit, ActivationResponse]] = {
+                  (implicit httpClient: HttpExt, materializer: Materializer): Future[Either[String, ActivationResponse]] = {
 
     Json4sUtil.any2String(activation) match {
 
@@ -344,8 +344,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
         }
 
       case None =>
-        logger.error(s"failed to to convert input to JSON: activationJson=$activation")
-        Future(Left(()))
+        Future(Left(s"failed to to convert input to JSON: activationJson=$activation"))
     }
   }
 
