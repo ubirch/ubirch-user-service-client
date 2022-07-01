@@ -17,6 +17,7 @@ import org.json4s.native.Serialization.read
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.Try
 
 object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
@@ -416,6 +417,28 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
   }
 
+  def getUsersWithPagination(limit: Int, lastCreatedAtOpt: Option[org.joda.time.DateTime])(implicit httpClient: HttpExt, materializer: Materializer): Future[List[User]] = {
+    logger.debug(s"getUsersWithPagination(): get users limit: $limit, lastCreatedAt: $lastCreatedAtOpt through REST API")
+    val url = UserServiceClientRoutes.pathGetUsers(limit, lastCreatedAtOpt)
+
+    httpClient.singleRequest(HttpRequest(uri = url)) flatMap {
+
+      case HttpResponse(StatusCodes.OK, _, entity, _) =>
+
+        entity.dataBytes.runFold(ByteString(""))(_ ++ _) flatMap { body =>
+          Future.fromTry(
+            Try(read[List[User]](body.utf8String))
+          )
+        }
+
+      case _@HttpResponse(code, _, _, _) =>
+
+        logErrorAndReturnNone(s"getUsersWithPagination() call to user-service REST API failed: url=$url, code=$code")
+        Future.failed(UserServiceClientException("fail to get users with pagination"))
+
+    }
+  }
+
   private def logErrorAndReturnNone[T](
                                         errorMsg: String,
                                         t: Option[Throwable] = None
@@ -430,3 +453,5 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
   }
 
 }
+
+case class UserServiceClientException(message: String) extends Exception(message)
