@@ -12,6 +12,7 @@ import com.ubirch.util.deepCheck.model.ServiceCheckResponse
 import com.ubirch.util.deepCheck.util.ServiceCheckResponseUtil
 import com.ubirch.util.json.{Json4sUtil, JsonFormats, MyJsonProtocol}
 import com.ubirch.util.model.JsonResponse
+import org.joda.time.DateTimeZone
 import org.json4s.Formats
 import org.json4s.native.Serialization.read
 
@@ -418,7 +419,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
   }
 
   def getUsersWithPagination(limit: Int, lastCreatedAtOpt: Option[org.joda.time.DateTime])(implicit httpClient: HttpExt, materializer: Materializer): Future[List[User]] = {
-    logger.debug(s"getUsersWithPagination(): get users limit: $limit, lastCreatedAt: $lastCreatedAtOpt through REST API")
+    logger.debug(s"getUsersWithPagination(): get users limit: $limit, lastCreatedAt: ${lastCreatedAtOpt.map(_.toDateTime(DateTimeZone.UTC))} through REST API")
     val url = UserServiceClientRoutes.pathGetUsers(limit, lastCreatedAtOpt)
 
     httpClient.singleRequest(HttpRequest(uri = url)) flatMap {

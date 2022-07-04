@@ -201,6 +201,34 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
         groupSetOpt.get.nonEmpty shouldBe false
       }
     }
+
+
+    Scenario("getUsersWithPagination returns users") {
+      UserServiceClient.getUsersWithPagination(
+        2,
+        None
+      ).map { users =>
+        users.length shouldBe 2
+      }
+
+      for {
+        users <- UserServiceClient.getUsersWithPagination(
+          2,
+          None)
+        lastUser = users.last
+        next2Users <- UserServiceClient.getUsersWithPagination(
+          2,
+          Some(lastUser.created))
+        emptyUsers <- UserServiceClient.getUsersWithPagination(
+          2,
+          Some(DateTime.now().plusMinutes(1)))
+      } yield {
+        users.length shouldBe 2
+        next2Users.length shouldBe 2
+        next2Users.head.created.isAfter(users.last.created) shouldBe true
+        emptyUsers.isEmpty shouldBe true
+      }
+    }
   }
 
 }

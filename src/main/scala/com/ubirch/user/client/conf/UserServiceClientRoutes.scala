@@ -1,7 +1,7 @@
 package com.ubirch.user.client.conf
 
 import com.ubirch.user.client.conf.UserServiceClientConfig.host
-import org.joda.time.DateTime
+import org.joda.time.{DateTime, DateTimeZone}
 
 object UserServiceClientRoutes {
 
@@ -101,7 +101,7 @@ object UserServiceClientRoutes {
                   ): String = {
     val path = UserServiceClientRouteKeys.pathUsers
     lastCreatedAtOpt match {
-      case Some(lastCreatedAt) => s"$host$path?limit=$limit&lastCreatedAt=${lastCreatedAt.toString}"
+      case Some(lastCreatedAt) => s"$host$path?limit=$limit&lastCreatedAt=${lastCreatedAt.toDateTime(DateTimeZone.UTC).toString}"
       case None => s"$host$path?limit=$limit"
     }
   }
