@@ -8,15 +8,17 @@ import com.typesafe.scalalogging.StrictLogging
 import com.ubirch.user.client.conf.UserServiceClientRoutes
 import com.ubirch.user.client.formats.UserFormats
 import com.ubirch.user.client.model._
-import com.ubirch.util.deepCheck.model.DeepCheckResponse
-import com.ubirch.util.deepCheck.util.DeepCheckResponseUtil
+import com.ubirch.util.deepCheck.model.ServiceCheckResponse
+import com.ubirch.util.deepCheck.util.ServiceCheckResponseUtil
 import com.ubirch.util.json.{Json4sUtil, JsonFormats, MyJsonProtocol}
 import com.ubirch.util.model.JsonResponse
+import org.joda.time.DateTimeZone
 import org.json4s.Formats
 import org.json4s.native.Serialization.read
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.Try
 
 object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
@@ -35,7 +37,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
       case res@HttpResponse(code, _, _, _) =>
 
         res.discardEntityBytes()
-        Future(
+        Future.successful(
           logErrorAndReturnNone(s"check() call to key-service failed: url=$url code=$code, status=${res.status}")
         )
 
@@ -43,7 +45,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
   }
 
-  def deepCheck()(implicit httpClient: HttpExt, materializer: Materializer): Future[DeepCheckResponse] = {
+  def deepCheck()(implicit httpClient: HttpExt, materializer: Materializer): Future[ServiceCheckResponse] = {
 
     val statusCodes: Set[StatusCode] = Set(StatusCodes.OK, StatusCodes.ServiceUnavailable)
 
@@ -54,7 +56,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
       case HttpResponse(status, _, entity, _) if statusCodes.contains(status) =>
 
         entity.dataBytes.runFold(ByteString(""))(_ ++ _) map { body =>
-          read[DeepCheckResponse](body.utf8String)
+          read[ServiceCheckResponse](body.utf8String)
         }
 
       case res@HttpResponse(code, _, _, _) =>
@@ -62,9 +64,9 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
         res.discardEntityBytes()
         val errorText = s"deepCheck() call to user-service failed: url=$url code=$code, status=${res.status}"
         logger.error(errorText)
-        val deepCheckRes = DeepCheckResponse(status = false, messages = Seq(errorText))
-        Future(
-          DeepCheckResponseUtil.addServicePrefix("user-service", deepCheckRes)
+        val deepCheckRes = ServiceCheckResponse(status = false, messages = Seq(errorText))
+        Future.successful(
+          ServiceCheckResponseUtil.addServicePrefix("user-service", deepCheckRes)
         )
 
     }
@@ -96,7 +98,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
       case res@HttpResponse(code, _, _, _) =>
 
         res.discardEntityBytes()
-        Future(
+        Future.successful(
           logErrorAndReturnNone(s"groups() call to user-service REST API failed: url=$url, code=$code")
         )
 
@@ -127,7 +129,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
         res.discardEntityBytes()
         logger.warn(s"userGET() call to user-service REST API failed: url=$url, code=$code")
-        Future(None)
+        Future.successful(None)
 
     }
 
@@ -146,7 +148,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
       case None =>
         logger.error(s"failed to to convert input to JSON: user=$user")
-        Future(None)
+        Future.successful(None)
 
     }
   }
@@ -164,7 +166,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
       case None =>
         logger.error(s"failed to to convert input to JSON: user=$user")
-        Future(None)
+        Future.successful(None)
 
     }
   }
@@ -187,7 +189,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
       case res@HttpResponse(code, _, _, _) =>
 
         res.discardEntityBytes()
-        Future(
+        Future.successful(
           logErrorAndReturnNone(s"userPOST() call to user-service failed: url=$url code=$code, status=${res.status}")
         )
     }
@@ -221,7 +223,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
           case res@HttpResponse(code, _, _, _) =>
 
             res.discardEntityBytes()
-            Future(
+            Future.successful(
               logErrorAndReturnNone(s"userPOST() call to user-service failed: url=$url code=$code, status=${res.status}")
             )
 
@@ -245,18 +247,18 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
       externalUserId = externalUserId
     )
 
-    httpClient.singleRequest(HttpRequest(uri = url, method = HttpMethods.DELETE)) flatMap {
+    httpClient.singleRequest(HttpRequest(uri = url, method = HttpMethods.DELETE)) map {
 
       case res@HttpResponse(StatusCodes.OK, _, _, _) =>
 
         res.discardEntityBytes()
-        Future(true)
+        true
 
       case res@HttpResponse(code, _, _, _) =>
 
         res.discardEntityBytes()
         logErrorAndReturnNone(s"userGET() call to user-service REST API failed: url=$url, code=$code")
-        Future(false)
+        false
 
     }
 
@@ -270,12 +272,12 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
     httpClient.singleRequest(HttpRequest(uri = url)) map {
 
-      case res@HttpResponse(StatusCodes.OK, _, entity, _) =>
+      case res@HttpResponse(StatusCodes.OK, _, _, _) =>
 
         res.discardEntityBytes()
         true
 
-      case res@HttpResponse(code, _, _, _) =>
+      case _@HttpResponse(code, _, _, _) =>
 
         logger.warn(s"emailExistsGET() call to user-service REST API failed: url=$url, code=$code")
         false
@@ -309,7 +311,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
           case res@HttpResponse(code, _, _, _) =>
 
             res.discardEntityBytes()
-            Future(
+            Future.successful(
               logErrorAndReturnNone(s"registerPOST() call to user-service failed: url=$url code=$code, status=${res.status}, userContextJson=$userContextJsonString")
             )
 
@@ -317,7 +319,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
       case None =>
         logger.error(s"failed to to convert input to JSON: userContext=$userContext")
-        Future(None)
+        Future.successful(None)
 
     }
 
@@ -344,7 +346,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
         }
 
       case None =>
-        Future(Left(s"failed to to convert input to JSON: activationJson=$activation"))
+        Future.successful(Left(s"failed to to convert input to JSON: activationJson=$activation"))
     }
   }
 
@@ -367,10 +369,10 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
           Some(read[UserInfo](body.utf8String))
         }
 
-      case res@HttpResponse(code, _, _, _) =>
+      case _@HttpResponse(code, _, _, _) =>
 
         logErrorAndReturnNone(s"userInfoGET() call to user-service REST API failed: url=$url, code=$code")
-        Future(None)
+        Future.successful(None)
 
     }
 
@@ -402,7 +404,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
           case res@HttpResponse(code, _, _, _) =>
 
             res.discardEntityBytes()
-            Future(
+            Future.successful(
               logErrorAndReturnNone(s"userInfoPUT() call to user-service failed: url=$url code=$code, status=${res.status}")
             )
 
@@ -410,10 +412,32 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
       case None =>
         logger.error(s"failed to to convert input to JSON: updateInfo=$updateInfo")
-        Future(None)
+        Future.successful(None)
 
     }
 
+  }
+
+  def getUsersWithPagination(limit: Int, lastCreatedAtOpt: Option[org.joda.time.DateTime])(implicit httpClient: HttpExt, materializer: Materializer): Future[List[User]] = {
+    logger.debug(s"getUsersWithPagination(): get users limit: $limit, lastCreatedAt: ${lastCreatedAtOpt.map(_.toDateTime(DateTimeZone.UTC))} through REST API")
+    val url = UserServiceClientRoutes.pathGetUsers(limit, lastCreatedAtOpt)
+
+    httpClient.singleRequest(HttpRequest(uri = url)) flatMap {
+
+      case HttpResponse(StatusCodes.OK, _, entity, _) =>
+
+        entity.dataBytes.runFold(ByteString(""))(_ ++ _) flatMap { body =>
+          Future.fromTry(
+            Try(read[List[User]](body.utf8String))
+          )
+        }
+
+      case _@HttpResponse(code, _, _, _) =>
+
+        logErrorAndReturnNone(s"getUsersWithPagination() call to user-service REST API failed: url=$url, code=$code")
+        Future.failed(UserServiceClientException("fail to get users with pagination"))
+
+    }
   }
 
   private def logErrorAndReturnNone[T](
@@ -430,3 +454,5 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
   }
 
 }
+
+case class UserServiceClientException(message: String) extends Exception(message)
