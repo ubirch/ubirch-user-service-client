@@ -8,8 +8,8 @@ import com.typesafe.scalalogging.StrictLogging
 import com.ubirch.user.client.conf.UserServiceClientRoutes
 import com.ubirch.user.client.formats.UserFormats
 import com.ubirch.user.client.model._
-import com.ubirch.util.deepCheck.model.ServiceCheckResponse
-import com.ubirch.util.deepCheck.util.ServiceCheckResponseUtil
+import com.ubirch.util.deepCheck.model.DeepCheckResponse
+import com.ubirch.util.deepCheck.util.DeepCheckResponseUtil
 import com.ubirch.util.json.{Json4sUtil, JsonFormats, MyJsonProtocol}
 import com.ubirch.util.model.JsonResponse
 import org.joda.time.DateTimeZone
@@ -45,7 +45,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
   }
 
-  def deepCheck()(implicit httpClient: HttpExt, materializer: Materializer): Future[ServiceCheckResponse] = {
+  def deepCheck()(implicit httpClient: HttpExt, materializer: Materializer): Future[DeepCheckResponse] = {
 
     val statusCodes: Set[StatusCode] = Set(StatusCodes.OK, StatusCodes.ServiceUnavailable)
 
@@ -56,7 +56,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
       case HttpResponse(status, _, entity, _) if statusCodes.contains(status) =>
 
         entity.dataBytes.runFold(ByteString(""))(_ ++ _) map { body =>
-          read[ServiceCheckResponse](body.utf8String)
+          read[DeepCheckResponse](body.utf8String)
         }
 
       case res@HttpResponse(code, _, _, _) =>
@@ -64,9 +64,9 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
         res.discardEntityBytes()
         val errorText = s"deepCheck() call to user-service failed: url=$url code=$code, status=${res.status}"
         logger.error(errorText)
-        val deepCheckRes = ServiceCheckResponse(status = false, messages = Seq(errorText))
+        val deepCheckRes = DeepCheckResponse(status = false, messages = Seq(errorText))
         Future.successful(
-          ServiceCheckResponseUtil.addServicePrefix("user-service", deepCheckRes)
+          DeepCheckResponseUtil.addServicePrefix("user-service", deepCheckRes)
         )
 
     }
