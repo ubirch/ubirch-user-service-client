@@ -97,12 +97,14 @@ object UserServiceClientRoutes {
 
   def pathGetUsers(
       limit: Int,
-      lastCreatedAtOpt: Option[DateTime]
+      lastCreatedAtOpt: Option[DateTime],
+      offsetOpt: Option[Int]
                   ): String = {
     val path = UserServiceClientRouteKeys.pathUsers
-    lastCreatedAtOpt match {
-      case Some(lastCreatedAt) => s"$host$path?limit=$limit&lastCreatedAt=${lastCreatedAt.toDateTime(DateTimeZone.UTC).toString}"
-      case None => s"$host$path?limit=$limit"
+    (lastCreatedAtOpt, offsetOpt) match {
+      case (Some(lastCreatedAt), _) => s"$host$path?limit=$limit&lastCreatedAt=${lastCreatedAt.toDateTime(DateTimeZone.UTC).toString}"
+      case (None, Some(offset)) => s"$host$path?limit=$limit&offset=$offset"
+      case _ => s"$host$path?limit=$limit"
     }
   }
 }

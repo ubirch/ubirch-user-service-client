@@ -418,9 +418,9 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
   }
 
-  def getUsersWithPagination(limit: Int, lastCreatedAtOpt: Option[org.joda.time.DateTime])(implicit httpClient: HttpExt, materializer: Materializer): Future[List[User]] = {
-    logger.debug(s"getUsersWithPagination(): get users limit: $limit, lastCreatedAt: ${lastCreatedAtOpt.map(_.toDateTime(DateTimeZone.UTC))} through REST API")
-    val url = UserServiceClientRoutes.pathGetUsers(limit, lastCreatedAtOpt)
+  def getUsersWithPagination(limit: Int, lastCreatedAtOpt: Option[org.joda.time.DateTime], offsetOpt: Option[Int])(implicit httpClient: HttpExt, materializer: Materializer): Future[List[User]] = {
+    logger.debug(s"getUsersWithPagination(): get users limit: $limit, lastCreatedAt: ${lastCreatedAtOpt.map(_.toDateTime(DateTimeZone.UTC))}, offset: $offsetOpt through REST API")
+    val url = UserServiceClientRoutes.pathGetUsers(limit, lastCreatedAtOpt, offsetOpt)
 
     httpClient.singleRequest(HttpRequest(uri = url)) flatMap {
 

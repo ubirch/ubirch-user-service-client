@@ -204,29 +204,39 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
 
 
     Scenario("getUsersWithPagination returns users") {
-      UserServiceClient.getUsersWithPagination(
-        2,
-        None
-      ).map { users =>
-        users.length shouldBe 2
-      }
-
       for {
         users <- UserServiceClient.getUsersWithPagination(
           2,
-          None)
+          None,
+          None
+        )
         lastUser = users.last
         next2Users <- UserServiceClient.getUsersWithPagination(
           2,
-          Some(lastUser.created))
+          Some(lastUser.created),
+          None)
         emptyUsers <- UserServiceClient.getUsersWithPagination(
           2,
-          Some(DateTime.now().plusMinutes(1)))
+          Some(DateTime.now().plusMinutes(1)),
+          None)
+        usersWithOffset0 <- UserServiceClient.getUsersWithPagination(
+          2,
+          None,
+          Some(0)
+        )
+        usersWithOffset1 <- UserServiceClient.getUsersWithPagination(
+          2,
+          None,
+          Some(1)
+        )
       } yield {
         users.length shouldBe 2
         next2Users.length shouldBe 2
         next2Users.head.created.isAfter(users.last.created) shouldBe true
         emptyUsers.isEmpty shouldBe true
+        usersWithOffset0.length shouldBe 2
+        usersWithOffset1.length shouldBe 2
+        assert(usersWithOffset1.head.created.isAfter(usersWithOffset0.last.created))
       }
     }
   }
