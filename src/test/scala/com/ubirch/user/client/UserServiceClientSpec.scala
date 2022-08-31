@@ -10,6 +10,8 @@ import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.featurespec.AsyncFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
+import java.util.UUID
+
 class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLogging {
 
   implicit val system: ActorSystem = ActorSystem("userServiceClientTSpec")
@@ -237,6 +239,28 @@ class UserServiceClientSpec extends AsyncFeatureSpec with Matchers with StrictLo
         usersWithOffset0.length shouldBe 2
         usersWithOffset1.length shouldBe 2
         assert(usersWithOffset1.head.created.isAfter(usersWithOffset0.last.created))
+      }
+    }
+
+    Scenario("getUsersByIds returns users") {
+      for {
+        users <- UserServiceClient.getUsersWithPagination(
+          2,
+          None,
+          None
+        )
+        userIds = users.map(_.id.get)
+        usersByIds <- UserServiceClient.getUsersByIds(
+          userIds)
+        nonUsers <- UserServiceClient.getUsersByIds(
+          List(UUID.randomUUID()))
+        usersByIds2 <- UserServiceClient.getUsersByIds(
+          userIds.+:(UUID.randomUUID()))
+      } yield {
+        users.length shouldBe 2
+        usersByIds.length shouldBe 2
+        nonUsers.length shouldBe 0
+        usersByIds2.length shouldBe 2
       }
     }
   }
