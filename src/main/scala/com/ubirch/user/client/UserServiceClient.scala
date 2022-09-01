@@ -5,7 +5,7 @@ import akka.http.scaladsl.model._
 import akka.stream.Materializer
 import akka.util.ByteString
 import com.typesafe.scalalogging.StrictLogging
-import com.ubirch.user.client.conf.UserServiceClientRoutes
+import com.ubirch.user.client.conf.{UserServiceClientRouteKeys, UserServiceClientRoutes}
 import com.ubirch.user.client.formats.UserFormats
 import com.ubirch.user.client.model._
 import com.ubirch.util.deepCheck.model.DeepCheckResponse
@@ -16,6 +16,7 @@ import org.joda.time.DateTimeZone
 import org.json4s.Formats
 import org.json4s.native.Serialization.read
 
+import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Try
@@ -418,6 +419,42 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
   }
 
+  def getUsersByIds(userIds: List[UUID])(implicit httpClient: HttpExt, materializer: Materializer): Future[List[User]] = {
+    logger.debug(s"getUsersByIds(): get users by Ids through REST API")
+
+    Json4sUtil.any2String(userIds) match {
+      case Some(userIdsJson: String) =>
+        val url = UserServiceClientRoutes.pathUsersByIds
+        val req = HttpRequest(
+          method = HttpMethods.POST,
+          uri = url,
+          entity = HttpEntity.Strict(ContentTypes.`application/json`, data = ByteString(userIdsJson))
+        )
+        httpClient.singleRequest(req) flatMap {
+          case HttpResponse(StatusCodes.OK, _, entity, _) =>
+
+          entity.dataBytes.runFold(ByteString(""))(_ ++ _) flatMap { body =>
+            Future.fromTry(
+              Try(read[List[User]](body.utf8String))
+            )
+          }
+
+          case _@HttpResponse(code, _, _, _) =>
+            logErrorAndReturnNone(s"getUsersByIds() call to user-service REST API failed: url=$url, code=$code")
+            code match {
+              case StatusCodes.BadRequest =>
+                Future.failed(UserServiceInvalidClientException("fail to get users by ids"))
+              case _ =>
+                Future.failed(UserServiceClientException("fail to get users by ids"))
+            }
+        }
+
+      case None =>
+        logger.error("failed to convert input to JSON")
+        Future.failed(UserServiceInvalidClientException("fail to convert input to JSON"))
+    }
+  }
+
   def getUsersWithPagination(limit: Int, lastCreatedAtOpt: Option[org.joda.time.DateTime], offsetOpt: Option[Int])(implicit httpClient: HttpExt, materializer: Materializer): Future[List[User]] = {
     logger.debug(s"getUsersWithPagination(): get users limit: $limit, lastCreatedAt: ${lastCreatedAtOpt.map(_.toDateTime(DateTimeZone.UTC))}, offset: $offsetOpt through REST API")
     val url = UserServiceClientRoutes.pathGetUsers(limit, lastCreatedAtOpt, offsetOpt)
@@ -435,8 +472,12 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
       case _@HttpResponse(code, _, _, _) =>
 
         logErrorAndReturnNone(s"getUsersWithPagination() call to user-service REST API failed: url=$url, code=$code")
-        Future.failed(UserServiceClientException("fail to get users with pagination"))
-
+        code match {
+          case StatusCodes.BadRequest =>
+            Future.failed(UserServiceInvalidClientException("fail to get users with pagination"))
+          case _ =>
+            Future.failed(UserServiceClientException("fail to get users with pagination"))
+        }
     }
   }
 
@@ -456,3 +497,4 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 }
 
 case class UserServiceClientException(message: String) extends Exception(message)
+case class UserServiceInvalidClientException(message: String) extends Exception(message)

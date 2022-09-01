@@ -93,6 +93,7 @@ object UserServiceClientRoutes {
 
   }
 
+  val pathUsersByIds = s"$host${UserServiceClientRouteKeys.pathUsersByIds}"
   val pathUserInfoPUT = s"$host${UserServiceClientRouteKeys.pathUserInfoPUT}"
 
   def pathGetUsers(

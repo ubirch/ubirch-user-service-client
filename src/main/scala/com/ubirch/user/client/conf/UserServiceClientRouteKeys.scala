@@ -19,6 +19,7 @@ object UserServiceClientRouteKeys {
   final val info = "info"
   final val register = "register"
   final val activation = "activation"
+  final val byIds = "byIds"
   val pathPrefix = s"/$apiPrefix/$serviceName/$currentVersion"
   val pathCheck = s"$pathPrefix/$check"
   val pathDeepCheck = s"$pathPrefix/$deepCheck"
@@ -29,6 +30,7 @@ object UserServiceClientRouteKeys {
   final val pathUserInfoPUT = pathUserInfo
   final val pathRegister = s"$pathPrefix/$register"
   final val pathUsers = s"$pathPrefix/$users"
+  final val pathUsersByIds = s"$pathPrefix/$users/$byIds"
 
   def pathUserFind(providerId: String, externalUserId: String): String = {
 
