@@ -424,7 +424,7 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 
     Json4sUtil.any2String(userIds) match {
       case Some(userIdsJson: String) =>
-        val url = UserServiceClientRouteKeys.pathUsersByIds
+        val url = UserServiceClientRoutes.pathUsersByIds
         val req = HttpRequest(
           method = HttpMethods.POST,
           uri = url,
@@ -440,15 +440,18 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
           }
 
           case _@HttpResponse(code, _, _, _) =>
-
-          logErrorAndReturnNone(s"getUsersWithPagination() call to user-service REST API failed: url=$url, code=$code")
-          Future.failed(UserServiceClientException("fail to get users with pagination"))
+            logErrorAndReturnNone(s"getUsersByIds() call to user-service REST API failed: url=$url, code=$code")
+            code match {
+              case StatusCodes.BadRequest =>
+                Future.failed(UserServiceInvalidClientException("fail to get users by ids"))
+              case _ =>
+                Future.failed(UserServiceClientException("fail to get users by ids"))
+            }
         }
 
       case None =>
-        logger.error("failed to to convert input to JSON")
-        // return empty user list because the userIds argument is incorrect and it's not recoverable
-        Future.successful(List.empty)
+        logger.error("failed to convert input to JSON")
+        Future.failed(UserServiceInvalidClientException("fail to convert input to JSON"))
     }
   }
 
@@ -469,8 +472,12 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
       case _@HttpResponse(code, _, _, _) =>
 
         logErrorAndReturnNone(s"getUsersWithPagination() call to user-service REST API failed: url=$url, code=$code")
-        Future.failed(UserServiceClientException("fail to get users with pagination"))
-
+        code match {
+          case StatusCodes.BadRequest =>
+            Future.failed(UserServiceInvalidClientException("fail to get users with pagination"))
+          case _ =>
+            Future.failed(UserServiceClientException("fail to get users with pagination"))
+        }
     }
   }
 
@@ -490,3 +497,4 @@ object UserServiceClient extends MyJsonProtocol with StrictLogging {
 }
 
 case class UserServiceClientException(message: String) extends Exception(message)
+case class UserServiceInvalidClientException(message: String) extends Exception(message)
